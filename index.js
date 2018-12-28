@@ -7,15 +7,24 @@ class Block {
         this.timestamp = timestamp;
         this.data = data;
         this.hash = this.calculateHash();
+        this.nonce = 0;
+    }
+    mineBlock(difficulty) {
+        while (this.hash.substring(0, difficulty) !== Array(difficulty + 1).join("0")) {
+            this.nonce++;
+            this.hash = this.calculateHash();
+        }
+        console.log("BLOCK MINED: " + this.hash);
     }
     calculateHash() {
-        return SHA256(this.index + this.previousHash + this.timestamp + JSON.stringify(this.data)).toString();
+        return SHA256(this.index + this.previousHash + this.timestamp + JSON.stringify(this.data) + this.nonce).toString();
     }
     
 }
 class Blockchain {
     constructor() {
         this.chain = [this.createGenesisBlock()];
+        this.difficulty = 4;
     }
 
     createGenesisBlock() {
@@ -28,9 +37,10 @@ class Blockchain {
 
     addBlock(newBlock) {
         newBlock.previousHash = this.getLatestBlock().hash;
-        newBlock.hash = newBlock.calculateHash();
+        newBlock.mineBlock(this.difficulty);
         this.chain.push(newBlock);
     }
+
 
     isChainValid() {
         for (let i = 1; i < this.chain.length; i++) {
@@ -49,10 +59,9 @@ class Blockchain {
     }
 }
 let savjeeCoin = new Blockchain();
-savjeeCoin.addBlock(new Block(1, "20/07/2017", { amount: 4 }));
-savjeeCoin.addBlock(new Block(2, "20/07/2017", { amount: 8 }));
-console.log(savjeeCoin.isChainValid());
-savjeeCoin.chain[1].data = { amount: 100 };
 
-// Check our chain again (will now return false)
-console.log("Blockchain valid? " + savjeeCoin.isChainValid());
+console.log('Mining block 1');
+savjeeCoin.addBlock(new Block(1, "20/07/2017", { amount: 4 }));
+
+console.log('Mining block 2');
+savjeeCoin.addBlock(new Block(2, "20/07/2017", { amount: 8 }));
